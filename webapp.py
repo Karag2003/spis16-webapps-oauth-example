@@ -1,10 +1,12 @@
 from flask import Flask, redirect, url_for, session, request, jsonify
 from flask_oauthlib.client import OAuth
 #from flask_oauthlib.contrib.apps import github #import to make requests to GitHub's OAuth
-from flask import render_template
+from flask import render_template, Markup
 
 import pprint
 import os
+import pymongo
+import sys
 
 # This code originally from https://github.com/lepture/flask-oauthlib/blob/master/example/github.py
 # Edited by P. Conrad for SPIS 2016 to add getting Client Id and Secret from
@@ -33,10 +35,22 @@ github = oauth.remote_app(
     authorize_url='https://github.com/login/oauth/authorize' #URL for github's OAuth login
 )
 
+os.environ['OAUTHLIB_INSECURE_TRANSPORT']='1'
 
 #context processors run before templates are rendered and add variable(s) to the template's context
 #context processors must return a dictionary 
 #this context processor adds the variable logged_in to the conext for all templates
+
+
+connection_string = os.environ["MONGO_CONNECTION_STRING"]
+db_name = os.environ["MONGO_DBNAME"]
+
+client = pymongo.MongoClient(connection_string)
+db = client[db_name]
+collection = db['Cars']
+
+
+
 @app.context_processor
 def inject_logged_in():
     return {"logged_in":('github_token' in session)}
@@ -48,7 +62,7 @@ def home():
 #redirect to GitHub's OAuth page and confirm callback URL
 @app.route('/login')
 def login():   
-    return github.authorize(callback=url_for('authorized', _external=True, _scheme='https')) #callback URL must match the pre-configured callback URL
+    return github.authorize(callback=url_for('authorized', _external=True, _scheme='http')) #callback URL must match the pre-configured callback URL
 
 @app.route('/logout')
 def logout():
@@ -81,7 +95,11 @@ def renderPage1():
         user_data_pprint = pprint.pformat(session['user_data'])#format the user data nicely
     else:
         user_data_pprint = '';
-    return render_template('page1.html',dump_user_data=user_data_pprint)
+    cars=collection.find()
+    carlist=""
+    for car in cars:
+        carlist=carlist + Markup("<li>") + car["question"] + Markup("</li>")
+    return render_template('page1.html',dump_user_data=user_data_pprint, cars=carlist)
 
 @app.route('/page2')
 def renderPage2():
@@ -91,6 +109,21 @@ def renderPage2():
 @github.tokengetter
 def get_github_oauth_token():
     return session['github_token']
+    
+    
+@app.route('/questions', methods=['POST'])
+def renderhome():
+       
+    newDoc = {
+        "question":request.form['question']
+
+    }
+
+    collection.insert_one(newDoc)
+    
+    return render_template('home.html')
+    
+    
 
 
 if __name__ == '__main__':

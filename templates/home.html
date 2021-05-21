@@ -3,10 +3,14 @@
 {% block title %}Home{% endblock %}
 
 {% block content %}
-  <h1>Home</h1>
-
-<p>This is a sample application to demonstrate authenticating against github oauth,
-using Flask, on Heroku.</p>
-
+  <h1>Welcome!</h1>
+  
+    <p>Post something for the community to see</p>
+  
+   
+   <form action='/questions', method="POST">
+       <input type="text" name="question">
+       <input type="submit" value="Post">
+   </form> 
 
 {% endblock %}
