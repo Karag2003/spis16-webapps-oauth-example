@@ -7,10 +7,17 @@
   
     <p>Post something for the community to see</p>
   
+    {% if logged_in %}
+        <form action='/questions', method="POST">
+            <input type="text" name="question">
+            <input type="submit" value="Post">
+        </form> 
+    {% else %}
+        <h2>Please Login before posting!</h2>
+    {% endif %}
    
-   <form action='/questions', method="POST">
-       <input type="text" name="question">
-       <input type="submit" value="Post">
-   </form> 
+   
+   
+   <p>See other Users' posts on the "Posts" tab.</p>
 
 {% endblock %}

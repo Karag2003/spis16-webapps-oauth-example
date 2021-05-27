@@ -1,7 +1,15 @@
 body {
-    background-color: red;
+
 }
 
 #content {
      margin-left: 20px;
+}
+
+.post {
+    list-style: none;
+    line-height: 8em;
+    border: 3px solid black;
+    border-radius: 5px;
+    margin-right: 50px;
 }
